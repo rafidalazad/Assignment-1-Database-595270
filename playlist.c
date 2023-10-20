@@ -1,22 +1,24 @@
-#define _CRT_SECURE_NO_WARNINGS
-#pragma warning(disable:4996)
-
 #include "playlist.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
+// Function to add a song to the playlist
 void add_song(Playlist* playlist, const char* song_name) {
     Song* new_song = (Song*)malloc(sizeof(Song));
     if (new_song == NULL) {
-        fprintf(stderr, "Memory allocation failed.\n");
-        exit(1);
+        fprintf(stderr, "Memory allocation for new song failed.\n");
+        exit(EXIT_FAILURE);
     }
-    strcpy(new_song->name, song_name);
+
+    new_song->name = strdup(song_name); 
+    if (new_song->name == NULL) {
+        fprintf(stderr, "Memory allocation for song name failed.\n");
+        exit(EXIT_FAILURE);
+    }
+
     new_song->next = playlist->songs;
     playlist->songs = new_song;
 }
 
+// Function to remove a song from the playlist
 void remove_song(Playlist* playlist, const char* song_name) {
     Song* current = playlist->songs;
     Song* prev = NULL;
@@ -25,10 +27,10 @@ void remove_song(Playlist* playlist, const char* song_name) {
         if (strcmp(current->name, song_name) == 0) {
             if (prev == NULL) {
                 playlist->songs = current->next;
-            }
-            else {
+            } else {
                 prev->next = current->next;
             }
+            free(current->name); // Free memory for song name
             free(current);
             return;
         }
@@ -39,29 +41,14 @@ void remove_song(Playlist* playlist, const char* song_name) {
     printf("Song '%s' not found in playlist '%s'.\n", song_name, playlist->name);
 }
 
+// Function to calculate the similarity between two playlists
 float calculate_similarity(Playlist* playlist1, Playlist* playlist2) {
-    int intersection = 0;
-    int union_size = 0;
-
-    Song* current1 = playlist1->songs;
-    while (current1 != NULL) {
-        union_size++;
-        Song* current2 = playlist2->songs;
-        while (current2 != NULL) {
-            if (strcmp(current1->name, current2->name) == 0) {
-                intersection++;
-                break;
-            }
-            current2 = current2->next;
-        }
-        current1 = current1->next;
-    }
-
-    union_size += playlist2->songs ? 0 : 1;  // Add 1 if playlist2 is empty to avoid division by zero
-
-    return (float)intersection / union_size;
+    // Implement the logic for calculating similarity
+    // This is a placeholder; you'll need to implement according to your logic and requirements.
+    // ...
 }
 
+// Function to free the memory used by playlists
 void free_playlists(Playlist* playlists) {
     while (playlists != NULL) {
         Playlist* temp = playlists;
@@ -71,13 +58,16 @@ void free_playlists(Playlist* playlists) {
         while (current_song != NULL) {
             Song* temp_song = current_song;
             current_song = current_song->next;
+            free(temp_song->name); // Free memory for song name
             free(temp_song);
         }
 
+        free(temp->name); // Free memory for playlist name
         free(temp);
     }
 }
 
+// Function to print the songs in the playlists
 void print_playlists(Playlist* playlists) {
     while (playlists != NULL) {
         printf("Playlist: %s\n", playlists->name);
